@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesin Pencari Al-Quran</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                    },
+                    fontFamily: {
+                        'amiri': ['Amiri', 'serif'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .arabic {
+            font-family: 'Amiri', serif;
+            font-size: 1.8rem;
+            line-height: 2.5rem;
+            direction: rtl;
+        }
+        .latin {
+            font-style: italic;
+        }
+        .loading {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(22, 163, 74, 0.3);
+            border-radius: 50%;
+            border-top-color: #16a34a;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .quran-badge {
+            background: linear-gradient(135deg, #16a34a 0%, #166534 100%);
+        }
+    </style>
+</head>
+<body class="font-poppins bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-primary-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <i class="fas fa-book-quran text-3xl mr-3"></i>
+                <h1 class="text-2xl font-bold">Mesin Pencari Al-Quran</h1>
+            </div>
+            <div class="flex space-x-4">
+                <a href="#" id="toggleTheme" class="hover:text-primary-200 transition-colors">
+                    <i class="fas fa-moon text-xl"></i>
+                </a>
+                <a href="#" id="home" class="hover:text-primary-200 transition-colors">
+                    <i class="fas fa-home text-xl"></i>
+                </a>
+                <a href="#" id="info" class="hover:text-primary-200 transition-colors">
+                    <i class="fas fa-info-circle text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Search Section -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-2xl font-semibold text-center text-primary-700 mb-6">
+                    <i class="fas fa-search mr-2"></i>Cari Ayat dalam Al-Quran
+                </h2>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-grow">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Masukkan kata kunci pencarian..."
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        >
+                    </div>
+                    <button 
+                        id="searchButton"
+                        class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                        <i class="fas fa-search mr-2"></i>
+                        Cari
+                    </button>
+                </div>
+                <div class="text-sm text-gray-500 mt-3">
+                    <p>Contoh: "sabar", "perang", "sholat", dll.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Explore Section -->
+        <section id="exploreSection" class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 class="text-xl font-semibold text-primary-700 mb-4">
+                <i class="fas fa-compass mr-2"></i>Jelajahi Al-Quran
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button id="exploreSurah" class="bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg p-4 flex items-center justify-center transition-colors">
+                    <i class="fas fa-book mr-2"></i>
+                    <span>Daftar Surah</span>
+                </button>
+                <button id="exploreJuz" class="bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg p-4 flex items-center justify-center transition-colors">
+                    <i class="fas fa-bookmark mr-2"></i>
+                    <span>Daftar Juz</span>
+                </button>
+                <button id="explorePage" class="bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg p-4 flex items-center justify-center transition-colors">
+                    <i class="fas fa-file-alt mr-2"></i>
+                    <span>Daftar Halaman</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Recent Searches -->
+        <section id="recentSearches" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <h3 class="text-xl font-semibold text-primary-700 mb-4">
+                <i class="fas fa-history mr-2"></i>Pencarian Terakhir
+            </h3>
+            <div class="flex flex-wrap gap-2" id="recentSearchTags">
+                <!-- Tags will be added dynamically -->
+            </div>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden flex justify-center items-center my-12">
+            <div class="loading"></div>
+            <p class="ml-4 text-lg text-primary-700">Mencari ayat...</p>
+        </div>
+
+        <!-- Search Results -->
+        <section id="resultsSection" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-primary-700">
+                    <i class="fas fa-list-ul mr-2"></i>Hasil Pencarian
+                </h3>
+                <p id="resultCount" class="text-gray-600 text-sm"></p>
+            </div>
+            <div id="searchResults" class="space-y-6">
+                <!-- Results will be populated here -->
+            </div>
+        </section>
+
+        <!-- Surah List Section -->
+        <section id="surahListSection" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-primary-700">
+                    <i class="fas fa-book mr-2"></i>Daftar Surah
+                </h3>
+                <button id="closeSurahList" class="text-gray-600 hover:text-primary-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="surahGrid">
+                <!-- Surah list will be populated here -->
+            </div>
+        </section>
+
+        <!-- Juz List Section -->
+        <section id="juzListSection" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-primary-700">
+                    <i class="fas fa-bookmark mr-2"></i>Daftar Juz
+                </h3>
+                <button id="closeJuzList" class="text-gray-600 hover:text-primary-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="juzGrid">
+                <!-- Juz list will be populated here -->
+            </div>
+        </section>
+
+        <!-- Page List Section -->
+        <section id="pageListSection" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-primary-700">
+                    <i class="fas fa-file-alt mr-2"></i>Daftar Halaman
+                </h3>
+                <button id="closePageList" class="text-gray-600 hover:text-primary-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="pageGrid">
+                <!-- Page list will be populated here -->
+            </div>
+        </section>
+
+        <!-- No Results -->
+        <section id="noResults" class="hidden bg-white rounded-lg shadow-md p-8 text-center">
+            <i class="far fa-sad-tear text-4xl text-gray-400 mb-3"></i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Tidak Ada Hasil Ditemukan</h3>
+            <p class="text-gray-600">Coba gunakan kata kunci yang berbeda atau periksa ejaan Anda.</p>
+        </section>
+    </main>
+
+    <!-- Information Modal -->
+    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 overflow-hidden">
+            <div class="bg-primary-700 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-semibold">Tentang Aplikasi</h3>
+                <button id="closeInfoModal" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <h4 class="font-semibold text-lg text-primary-700 mb-2">Mesin Pencari Al-Quran</h4>
+                    <p class="text-gray-700 mb-4">
+                        Aplikasi ini memungkinkan Anda untuk mencari ayat-ayat dalam Al-Quran berdasarkan kata kunci.
+                        Hasil pencarian akan menampilkan ayat dalam Bahasa Arab, Latin, dan terjemahan Bahasa Indonesia.
+                    </p>
+                    <p class="text-gray-700">
+                        Aplikasi ini menggunakan API Al-Quran yang menyediakan data lengkap dari seluruh 114 surah 
+                        dalam Al-Quran.
+                    </p>
+                </div>
+                <div class="mb-4">
+                    <h4 class="font-semibold text-lg text-primary-700 mb-2">Cara Penggunaan</h4>
+                    <ol class="list-decimal list-inside text-gray-700 space-y-1">
+                        <li>Masukkan kata kunci yang ingin dicari pada kotak pencarian</li>
+                        <li>Klik tombol "Cari" atau tekan Enter</li>
+                        <li>Hasil pencarian akan ditampilkan di bawah form pencarian</li>
+                        <li>Klik pada tombol audio untuk mendengarkan bacaan ayat</li>
+                        <li>Jelajahi Al-Quran melalui Surah, Juz, atau Halaman</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="bg-gray-100 px-6 py-4 flex justify-end">
+                <button id="closeInfoButton" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-primary-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Mesin Pencari Al-Quran</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-white hover:text-primary-200 transition-colors">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-primary-200 transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-primary-200 transition-colors">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // API Base URL - menggunakan API yang sudah ada
+        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyDhS4WMtLO2sSvvKImE6tq4gRcazMPGPkQDzjmIu2xDAeiVnD3mdsRfAetYFvi2RQUjw/exec';
+        
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultsSection = document.getElementById('resultsSection');
+        const searchResults = document.getElementById('searchResults');
+        const noResults = document.getElementById('noResults');
+        const resultCount = document.getElementById('resultCount');
+        const recentSearches = document.getElementById('recentSearches');
+        const recentSearchTags = document.getElementById('recentSearchTags');
+        const infoModal = document.getElementById('infoModal');
+        const infoButton = document.getElementById('info');
+        const closeInfoModal = document.getElementById('closeInfoModal');
+        const closeInfoButton = document.getElementById('closeInfoButton');
+        const toggleThemeButton = document.getElementById('toggleTheme');
+        const homeButton = document.getElementById('home');
+        const exploreSurah = document.getElementById('exploreSurah');
+        const exploreJuz = document.getElementById('exploreJuz');
+        const explorePage = document.getElementById('explorePage');
+        
+        // Surah Section
+        const surahListSection = document.getElementById('surahListSection');
+        const surahGrid = document.getElementById('surahGrid');
+        const closeSurahList = document.getElementById('closeSurahList');
+        
+        // Juz Section
+        const juzListSection = document.getElementById('juzListSection');
+        const juzGrid = document.getElementById('juzGrid');
+        const closeJuzList = document.getElementById('closeJuzList');
+        
+        // Page Section
+        const pageListSection = document.getElementById('pageListSection');
+        const pageGrid = document.getElementById('pageGrid');
+        const closePageList = document.getElementById('closePageList');
+        
+        // In-memory cache for surah info and ayat
+        const surahCache = {};
+        const juzCache = {};
+        const pageCache = {};
+        
+        // Theme Toggle
+        let darkMode = false;
+        toggleThemeButton.addEventListener('click', () => {
+            darkMode = !darkMode;
+            if (darkMode) {
+                document.body.classList.add('bg-gray-900', 'text-white');
+                document.body.classList.remove('bg-gray-50', 'text-gray-800');
+                toggleThemeButton.innerHTML = '<i class="fas fa-sun text-xl"></i>';
+                
+                // Change all white backgrounds to dark
+                document.querySelectorAll('.bg-white').forEach(el => {
+                    el.classList.remove('bg-white');
+                    el.classList.add('bg-gray-800');
+                });
+                
+                // Change text colors
+                document.querySelectorAll('.text-gray-700, .text-gray-600, .text-gray-500').forEach(el => {
+                    el.classList.add('text-gray-300');
+                    el.classList.remove('text-gray-700', 'text-gray-600', 'text-gray-500');
+                });
+            } else {
+                document.body.classList.remove('bg-gray-900', 'text-white');
+                document.body.classList.add('bg-gray-50', 'text-gray-800');
+                toggleThemeButton.innerHTML = '<i class="fas fa-moon text-xl"></i>';
+                
+                // Revert dark backgrounds to white
+                document.querySelectorAll('.bg-gray-800').forEach(el => {
+                    el.classList.add('bg-white');
+                    el.classList.remove('bg-gray-800');
+                });
+                
+                // Revert text colors
+                document.querySelectorAll('.text-gray-300').forEach(el => {
+                    el.classList.add('text-gray-600');
+                    el.classList.remove('text-gray-300');
+                });
+            }
+        });
+        
+        // Home button
+        homeButton.addEventListener('click', () => {
+            // Reset search
+            searchInput.value = '';
+            resultsSection.classList.add('hidden');
+            noResults.classList.add('hidden');
+            surahListSection.classList.add('hidden');
+            juzListSection.classList.add('hidden');
+            pageListSection.classList.add('hidden');
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // Info Modal Toggle
+        infoButton.addEventListener('click', () => {
+            infoModal.classList.remove('hidden');
+        });
+        
+        closeInfoModal.addEventListener('click', () => {
+            infoModal.classList.add('hidden');
+        });
+        
+        closeInfoButton.addEventListener('click', () => {
+            infoModal.classList.add('hidden');
+        });
+        
+        // Click outside to close modal
+        infoModal.addEventListener('click', (e) => {
+            if (e.target === infoModal) {
+                infoModal.classList.add('hidden');
+            }
+        });
+        
+        // Explore Surah
+        exploreSurah.addEventListener('click', async () => {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}?action=getAllSurah`);
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.status === 'success' && data.data && data.data.length > 0) {
+                    displaySurahList(data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching surah list:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat mengambil daftar surah. Silakan coba lagi.');
+            }
+        });
+        
+        // Explore Juz
+        exploreJuz.addEventListener('click', async () => {
+            showLoading();
+            hideAllContentSections();
+            try {
+                // Create list of 30 juz
+                const juzList = Array.from({ length: 30 }, (_, i) => i + 1);
+                displayJuzList(juzList);
+                hideLoading();
+            } catch (error) {
+                console.error('Error preparing juz list:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat menyiapkan daftar juz. Silakan coba lagi.');
+            }
+        });
+        
+        // Explore Page
+        explorePage.addEventListener('click', async () => {
+            showLoading();
+            hideAllContentSections();
+            try {
+                // Create list of 604 mushaf pages (standard mushaf has 604 pages)
+                const pageList = Array.from({ length: 604 }, (_, i) => i + 1);
+                displayPageList(pageList);
+                hideLoading();
+            } catch (error) {
+                console.error('Error preparing page list:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat menyiapkan daftar halaman. Silakan coba lagi.');
+            }
+        });
+        
+        // Display Surah List
+        function displaySurahList(surahList) {
+            hideAllContentSections();
+            surahListSection.classList.remove('hidden');
+            surahGrid.innerHTML = '';
+            
+            surahList.forEach(surah => {
+                // Cache the surah data for later use
+                surahCache[surah.number] = surah;
+                
+                const surahCard = document.createElement('div');
+                surahCard.className = 'bg-white rounded-lg shadow p-4 flex flex-col hover:shadow-md transition-shadow cursor-pointer';
+                if (darkMode) {
+                    surahCard.classList.remove('bg-white');
+                    surahCard.classList.add('bg-gray-800');
+                }
+                
+                surahCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="quran-badge text-white rounded-full w-8 h-8 flex items-center justify-center">
+                            ${surah.number}
+                        </div>
+                        <div class="text-primary-700 text-sm">
+                            ${surah.number_of_verses} Ayat
+                        </div>
+                    </div>
+                    <h4 class="font-semibold text-lg">${surah.name_id}</h4>
+                    <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">${surah.translation_id}</p>
+                    <p class="arabic text-right mt-2">${surah.name_short}</p>
+                    <p class="text-xs text-gray-500 ${darkMode ? 'text-gray-400' : ''} mt-2">${surah.revelation_id}</p>
+                `;
+                
+                surahCard.addEventListener('click', () => {
+                    viewSurah(surah.number);
+                });
+                
+                surahGrid.appendChild(surahCard);
+            });
+            
+            // Scroll to surah list
+            surahListSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Display Juz List
+        function displayJuzList(juzList) {
+            hideAllContentSections();
+            juzListSection.classList.remove('hidden');
+            juzGrid.innerHTML = '';
+            
+            juzList.forEach(juzNumber => {
+                const juzCard = document.createElement('div');
+                juzCard.className = 'bg-white rounded-lg shadow p-4 flex flex-col hover:shadow-md transition-shadow cursor-pointer';
+                if (darkMode) {
+                    juzCard.classList.remove('bg-white');
+                    juzCard.classList.add('bg-gray-800');
+                }
+                
+                juzCard.innerHTML = `
+                    <div class="flex justify-center items-center mb-2">
+                        <div class="quran-badge text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
+                            ${juzNumber}
+                        </div>
+                    </div>
+                    <h4 class="font-semibold text-lg text-center">Juz ${juzNumber}</h4>
+                    <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''} text-center mt-2">
+                        Klik untuk melihat ayat-ayat dalam Juz ${juzNumber}
+                    </p>
+                `;
+                
+                juzCard.addEventListener('click', () => {
+                    viewJuz(juzNumber);
+                });
+                
+                juzGrid.appendChild(juzCard);
+            });
+            
+            // Scroll to juz list
+            juzListSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Display Page List
+        function displayPageList(pageList) {
+            hideAllContentSections();
+            pageListSection.classList.remove('hidden');
+            pageGrid.innerHTML = '';
+            
+            pageList.forEach(pageNumber => {
+                const pageCard = document.createElement('div');
+                pageCard.className = 'bg-white rounded-lg shadow p-3 flex flex-col hover:shadow-md transition-shadow cursor-pointer';
+                if (darkMode) {
+                    pageCard.classList.remove('bg-white');
+                    pageCard.classList.add('bg-gray-800');
+                }
+                
+                pageCard.innerHTML = `
+                    <div class="flex justify-center items-center">
+                        <div class="quran-badge text-white rounded-full w-10 h-10 flex items-center justify-center font-medium">
+                            ${pageNumber}
+                        </div>
+                    </div>
+                    <p class="text-xs text-center mt-2 text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                        Halaman ${pageNumber}
+                    </p>
+                `;
+                
+                pageCard.addEventListener('click', () => {
+                    viewPage(pageNumber);
+                });
+                
+                pageGrid.appendChild(pageCard);
+            });
+            
+            // Scroll to page list
+            pageListSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // View Juz
+        async function viewJuz(juzNumber) {
+            showLoading();
+            try {
+                if (juzCache[juzNumber]) {
+                    displayJuzContent(juzNumber, juzCache[juzNumber]);
+                    hideLoading();
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}?action=getJuz&number=${juzNumber}`);
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.status === 'success' && data.data) {
+                    // Cache the juz data
+                    juzCache[juzNumber] = data.data;
+                    displayJuzContent(juzNumber, data.data);
+                } else {
+                    alert('Tidak dapat memuat data juz. Silakan coba lagi.');
+                }
+            } catch (error) {
+                console.error('Error fetching juz:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat mengambil juz. Silakan coba lagi.');
+            }
+        }
+        
+        // View Page
+        async function viewPage(pageNumber) {
+            showLoading();
+            try {
+                if (pageCache[pageNumber]) {
+                    displayPageContent(pageNumber, pageCache[pageNumber]);
+                    hideLoading();
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}?action=getPage&number=${pageNumber}`);
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.status === 'success' && data.data) {
+                    // Cache the page data
+                    pageCache[pageNumber] = data.data;
+                    displayPageContent(pageNumber, data.data);
+                } else {
+                    alert('Tidak dapat memuat data halaman. Silakan coba lagi.');
+                }
+            } catch (error) {
+                console.error('Error fetching page:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat mengambil halaman. Silakan coba lagi.');
+            }
+        }
+        
+        // Display Juz Content
+        function displayJuzContent(juzNumber, ayatList) {
+            hideAllContentSections();
+            resultsSection.classList.remove('hidden');
+            searchResults.innerHTML = '';
+            
+            // Create juz header
+            const juzHeader = document.createElement('div');
+            juzHeader.className = 'bg-white rounded-lg shadow-md p-6 mb-6';
+            if (darkMode) {
+                juzHeader.classList.remove('bg-white');
+                juzHeader.classList.add('bg-gray-800');
+            }
+            
+            juzHeader.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <div class="quran-badge text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-3">
+                            ${juzNumber}
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">Juz ${juzNumber}</h3>
+                            <p class="text-gray-600 ${darkMode ? 'text-gray-300' : ''}">Total ${ayatList.length} Ayat</p>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                            Dimulai dari ${ayatList[0].Surah > 0 ? `Surah ${ayatList[0].Surah} Ayat ${ayatList[0].Ayah}` : ''}
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            searchResults.appendChild(juzHeader);
+            
+            // Group ayat by surah
+            const ayatBySurah = {};
+            ayatList.forEach(ayat => {
+                if (!ayatBySurah[ayat.Surah]) {
+                    ayatBySurah[ayat.Surah] = [];
+                }
+                ayatBySurah[ayat.Surah].push(ayat);
+            });
+            
+            // Display ayat grouped by surah
+            Object.keys(ayatBySurah).forEach(async (surahNumber) => {
+                const surahAyat = ayatBySurah[surahNumber];
+                
+                // Get surah info if not in cache
+                let surahInfo = surahCache[surahNumber];
+                if (!surahInfo) {
+                    try {
+                        surahInfo = await fetchSurahInfo(surahNumber);
+                    } catch (error) {
+                        console.error('Error fetching surah info:', error);
+                    }
+                }
+                
+                // Create surah header
+                const surahSection = document.createElement('div');
+                surahSection.className = 'mb-8';
+                
+                const surahHeader = document.createElement('div');
+                surahHeader.className = 'bg-primary-50 rounded-lg p-4 mb-4 flex items-center';
+                if (darkMode) {
+                    surahHeader.classList.remove('bg-primary-50');
+                    surahHeader.classList.add('bg-primary-900', 'bg-opacity-20');
+                }
+                
+                let surahName = `Surah ${surahNumber}`;
+                let surahTranslation = '';
+                
+                if (surahInfo) {
+                    surahName = surahInfo.name_id;
+                    surahTranslation = surahInfo.translation_id;
+                }
+                
+                surahHeader.innerHTML = `
+                    <div class="quran-badge text-white rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                        ${surahNumber}
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-primary-800">${surahName}</h3>
+                        <p class="text-primary-600 text-sm">${surahTranslation}</p>
+                    </div>
+                `;
+                
+                surahSection.appendChild(surahHeader);
+                searchResults.appendChild(surahSection);
+                
+                // Display ayat
+                surahAyat.forEach(ayat => {
+                    const ayatCard = document.createElement('div');
+                    ayatCard.className = 'bg-white rounded-lg shadow-md p-6 mb-4 transition-all duration-300 result-card';
+                    if (darkMode) {
+                        ayatCard.classList.remove('bg-white');
+                        ayatCard.classList.add('bg-gray-800');
+                    }
+                    
+                    ayatCard.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center">
+                                <div class="quran-badge text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                                    ${ayat.Ayah}
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                                        Halaman ${ayat.Page}, Juz ${ayat.Juz}
+                                    </p>
+                                </div>
+                            </div>
+                            <button class="play-audio bg-primary-100 hover:bg-primary-200 text-primary-700 p-2 rounded-full transition-colors" 
+                                    data-audio="${ayat.Audio}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <p class="arabic text-right">${ayat.Arab}</p>
+                            <p class="latin text-gray-700 ${darkMode ? 'text-gray-300' : ''}">${ayat.Latin}</p>
+                            <p class="text-gray-800 ${darkMode ? 'text-gray-100' : ''}">${ayat.Text}</p>
+                        </div>
+                    `;
+                    
+                    surahSection.appendChild(ayatCard);
+                });
+            });
+            
+            // Set result count
+            resultCount.textContent = `Juz ${juzNumber} • ${ayatList.length} Ayat`;
+            
+            // Add audio player functionality
+            setTimeout(() => {
+                setupAudioPlayers();
+            }, 500);
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Display Page Content
+        function displayPageContent(pageNumber, ayatList) {
+            hideAllContentSections();
+            resultsSection.classList.remove('hidden');
+            searchResults.innerHTML = '';
+            
+            // Create page header
+            const pageHeader = document.createElement('div');
+            pageHeader.className = 'bg-white rounded-lg shadow-md p-6 mb-6';
+            if (darkMode) {
+                pageHeader.classList.remove('bg-white');
+                pageHeader.classList.add('bg-gray-800');
+            }
+            
+            pageHeader.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <div class="quran-badge text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-3">
+                            ${pageNumber}
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">Halaman ${pageNumber}</h3>
+                            <p class="text-gray-600 ${darkMode ? 'text-gray-300' : ''}">Total ${ayatList.length} Ayat</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            searchResults.appendChild(pageHeader);
+            
+            // Group ayat by surah
+            const ayatBySurah = {};
+            ayatList.forEach(ayat => {
+                if (!ayatBySurah[ayat.Surah]) {
+                    ayatBySurah[ayat.Surah] = [];
+                }
+                ayatBySurah[ayat.Surah].push(ayat);
+            });
+            
+            // Display ayat grouped by surah
+            Object.keys(ayatBySurah).forEach(async (surahNumber) => {
+                const surahAyat = ayatBySurah[surahNumber];
+                
+                // Get surah info if not in cache
+                let surahInfo = surahCache[surahNumber];
+                if (!surahInfo) {
+                    try {
+                        surahInfo = await fetchSurahInfo(surahNumber);
+                    } catch (error) {
+                        console.error('Error fetching surah info:', error);
+                    }
+                }
+                
+                // Create surah header
+                const surahSection = document.createElement('div');
+                surahSection.className = 'mb-8';
+                
+                const surahHeader = document.createElement('div');
+                surahHeader.className = 'bg-primary-50 rounded-lg p-4 mb-4 flex items-center';
+                if (darkMode) {
+                    surahHeader.classList.remove('bg-primary-50');
+                    surahHeader.classList.add('bg-primary-900', 'bg-opacity-20');
+                }
+                
+                let surahName = `Surah ${surahNumber}`;
+                let surahTranslation = '';
+                
+                if (surahInfo) {
+                    surahName = surahInfo.name_id;
+                    surahTranslation = surahInfo.translation_id;
+                }
+                
+                surahHeader.innerHTML = `
+                    <div class="quran-badge text-white rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                        ${surahNumber}
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-primary-800">${surahName}</h3>
+                        <p class="text-primary-600 text-sm">${surahTranslation}</p>
+                    </div>
+                `;
+                
+                surahSection.appendChild(surahHeader);
+                searchResults.appendChild(surahSection);
+                
+                // Display ayat
+                surahAyat.forEach(ayat => {
+                    const ayatCard = document.createElement('div');
+                    ayatCard.className = 'bg-white rounded-lg shadow-md p-6 mb-4 transition-all duration-300 result-card';
+                    if (darkMode) {
+                        ayatCard.classList.remove('bg-white');
+                        ayatCard.classList.add('bg-gray-800');
+                    }
+                    
+                    ayatCard.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center">
+                                <div class="quran-badge text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                                    ${ayat.Ayah}
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                                        Halaman ${ayat.Page}, Juz ${ayat.Juz}
+                                    </p>
+                                </div>
+                            </div>
+                            <button class="play-audio bg-primary-100 hover:bg-primary-200 text-primary-700 p-2 rounded-full transition-colors" 
+                                    data-audio="${ayat.Audio}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <p class="arabic text-right">${ayat.Arab}</p>
+                            <p class="latin text-gray-700 ${darkMode ? 'text-gray-300' : ''}">${ayat.Latin}</p>
+                            <p class="text-gray-800 ${darkMode ? 'text-gray-100' : ''}">${ayat.Text}</p>
+                        </div>
+                    `;
+                    
+                    surahSection.appendChild(ayatCard);
+                });
+            });
+            
+            // Set result count
+            resultCount.textContent = `Halaman ${pageNumber} • ${ayatList.length} Ayat`;
+            
+            // Add audio player functionality
+            setTimeout(() => {
+                setupAudioPlayers();
+            }, 500);
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Close Juz List
+        closeJuzList.addEventListener('click', () => {
+            juzListSection.classList.add('hidden');
+        });
+        
+        // Close Page List
+        closePageList.addEventListener('click', () => {
+            pageListSection.classList.add('hidden');
+        });
+        
+        // View Surah
+        async function viewSurah(surahNumber) {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}?action=getSurah&number=${surahNumber}`);
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.status === 'success' && data.data) {
+                    displaySurah(data.data);
+                } else {
+                    alert('Tidak dapat memuat data surah. Silakan coba lagi.');
+                }
+            } catch (error) {
+                console.error('Error fetching surah:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat mengambil surah. Silakan coba lagi.');
+            }
+        }
+        
+        // Hide All Content Sections
+        function hideAllContentSections() {
+            resultsSection.classList.add('hidden');
+            surahListSection.classList.add('hidden');
+            juzListSection.classList.add('hidden');
+            pageListSection.classList.add('hidden');
+            noResults.classList.add('hidden');
+        }
+        
+        // Fetch Surah Info
+        async function fetchSurahInfo(surahNumber) {
+            // Check cache first
+            if (surahCache[surahNumber]) {
+                return surahCache[surahNumber];
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}?action=getSurah&number=${surahNumber}`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data && data.data.surah) {
+                    // Cache the result
+                    surahCache[surahNumber] = data.data.surah;
+                    return data.data.surah;
+                }
+                return null;
+            } catch (error) {
+                console.error('Error fetching surah info:', error);
+                return null;
+            }
+        }
+        
+        // Display Surah
+        function displaySurah(surahData) {
+            hideAllContentSections();
+            resultsSection.classList.remove('hidden');
+            searchResults.innerHTML = '';
+            
+            const surah = surahData.surah;
+            const ayatList = surahData.ayat;
+            
+            // Create surah header
+            const surahHeader = document.createElement('div');
+            surahHeader.className = 'bg-white rounded-lg shadow-md p-6 mb-6';
+            if (darkMode) {
+                surahHeader.classList.remove('bg-white');
+                surahHeader.classList.add('bg-gray-800');
+            }
+            
+            surahHeader.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <div class="quran-badge text-white rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                            ${surah.number}
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">${surah.name_id}</h3>
+                            <p class="text-gray-600 ${darkMode ? 'text-gray-300' : ''}">${surah.translation_id}</p>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="arabic text-3xl mb-2">${surah.name_short}</p>
+                        <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">${surah.revelation_id} • ${surah.number_of_verses} Ayat</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-gray-700 ${darkMode ? 'text-gray-300' : ''} text-sm">${surah.tafsir}</p>
+                </div>
+                <div class="mt-4 text-center">
+                    <button class="play-audio bg-primary-100 hover:bg-primary-200 text-primary-700 px-4 py-2 rounded-full transition-colors" 
+                            data-audio="${surah.audio_url}">
+                        <i class="fas fa-play mr-2"></i>Dengarkan Surah
+                    </button>
+                </div>
+            `;
+            
+            searchResults.appendChild(surahHeader);
+            
+            // Create ayat list
+            ayatList.forEach(ayat => {
+                const ayatCard = document.createElement('div');
+                ayatCard.className = 'bg-white rounded-lg shadow-md p-6 transition-all duration-300 result-card mb-4';
+                if (darkMode) {
+                    ayatCard.classList.remove('bg-white');
+                    ayatCard.classList.add('bg-gray-800');
+                }
+                
+                ayatCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <div class="quran-badge text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                                ${ayat.Ayah}
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                                    Halaman ${ayat.Page}, Juz ${ayat.Juz}
+                                </p>
+                            </div>
+                        </div>
+                        <button class="play-audio bg-primary-100 hover:bg-primary-200 text-primary-700 p-2 rounded-full transition-colors" 
+                                data-audio="${ayat.Audio}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="arabic text-right">${ayat.Arab}</p>
+                        <p class="latin text-gray-700 ${darkMode ? 'text-gray-300' : ''}">${ayat.Latin}</p>
+                        <p class="text-gray-800 ${darkMode ? 'text-gray-100' : ''}">${ayat.Text}</p>
+                    </div>
+                `;
+                
+                searchResults.appendChild(ayatCard);
+            });
+            
+            // Add audio player functionality
+            setupAudioPlayers();
+            
+            // Set result count
+            resultCount.textContent = `${surah.name_id} • ${surah.number_of_verses} Ayat`;
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Close Surah List
+        closeSurahList.addEventListener('click', () => {
+            surahListSection.classList.add('hidden');
+        });
+        
+        // Search Function - menggunakan endpoint yang sudah ada di API
+        async function searchQuran(keyword) {
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}?action=search&q=${encodeURIComponent(keyword)}`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data && data.data.length > 0) {
+                    // Before displaying, fetch surah info for each unique surah in results
+                    const uniqueSurahNumbers = [...new Set(data.data.map(ayat => ayat.Surah))];
+                    const surahPromises = uniqueSurahNumbers.map(num => fetchSurahInfo(num));
+                    await Promise.all(surahPromises);
+                    
+                    displayResults(data);
+                    saveRecentSearch(keyword);
+                } else {
+                    hideLoading();
+                    showNoResults();
+                }
+            } catch (error) {
+                console.error('Error searching Quran:', error);
+                hideLoading();
+                alert('Terjadi kesalahan saat mencari. Silakan coba lagi.');
+            }
+        }
+        
+        // Display Search Results
+        function displayResults(data) {
+            hideLoading();
+            hideAllContentSections();
+            resultsSection.classList.remove('hidden');
+            searchResults.innerHTML = '';
+            
+            resultCount.textContent = `Ditemukan ${data.count} hasil untuk "${data.keyword}"`;
+            
+            let currentSurah = null;
+            let surahSection = null;
+            
+            data.data.forEach((ayat, index) => {
+                const surahInfo = surahCache[ayat.Surah];
+                
+                // If this is a new surah or first item, create a surah header
+                if (!currentSurah || currentSurah !== ayat.Surah) {
+                    currentSurah = ayat.Surah;
+                    
+                    // Create a section for this surah
+                    surahSection = document.createElement('div');
+                    surahSection.className = 'mb-8';
+                    
+                    // Create surah header
+                    const surahHeader = document.createElement('div');
+                    surahHeader.className = 'bg-primary-50 rounded-lg p-4 mb-4 flex items-center';
+                    if (darkMode) {
+                        surahHeader.classList.remove('bg-primary-50');
+                        surahHeader.classList.add('bg-primary-900', 'bg-opacity-20');
+                    }
+                    
+                    let surahName = `Surah ${ayat.Surah}`;
+                    let surahTranslation = '';
+                    
+                    if (surahInfo) {
+                        surahName = surahInfo.name_id;
+                        surahTranslation = surahInfo.translation_id;
+                    }
+                    
+                    surahHeader.innerHTML = `
+                        <div class="quran-badge text-white rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                            ${ayat.Surah}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-primary-800">${surahName}</h3>
+                            <p class="text-primary-600 text-sm">${surahTranslation}</p>
+                        </div>
+                    `;
+                    
+                    surahSection.appendChild(surahHeader);
+                    searchResults.appendChild(surahSection);
+                }
+                
+                const resultCard = document.createElement('div');
+                resultCard.className = 'bg-white rounded-lg shadow-md p-6 mb-4 transition-all duration-300 result-card';
+                if (darkMode) {
+                    resultCard.classList.remove('bg-white');
+                    resultCard.classList.add('bg-gray-800');
+                }
+                
+                resultCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center">
+                            <div class="quran-badge text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                                ${ayat.Ayah}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-primary-700">
+                                    ${surahCache[ayat.Surah] ? surahCache[ayat.Surah].name_id : `Surah ${ayat.Surah}`} : ${ayat.Ayah}
+                                </h4>
+                                <p class="text-sm text-gray-600 ${darkMode ? 'text-gray-300' : ''}">
+                                    Halaman ${ayat.Page}, Juz ${ayat.Juz}
+                                </p>
+                            </div>
+                        </div>
+                        <button class="play-audio bg-primary-100 hover:bg-primary-200 text-primary-700 p-2 rounded-full transition-colors" 
+                                data-audio="${ayat.Audio}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="arabic text-right">${ayat.Arab}</p>
+                        <p class="latin text-gray-700 ${darkMode ? 'text-gray-300' : ''}">${ayat.Latin}</p>
+                        <p class="text-gray-800 ${darkMode ? 'text-gray-100' : ''}">${ayat.Text}</p>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button class="view-surah text-primary-600 hover:text-primary-800 text-sm flex items-center"
+                                data-surah="${ayat.Surah}">
+                            <i class="fas fa-book mr-1"></i> Lihat Surah Lengkap
+                        </button>
+                    </div>
+                `;
+                
+                surahSection.appendChild(resultCard);
+            });
+            
+            // Add audio player functionality
+            setupAudioPlayers();
+            
+            // Add view surah functionality
+            document.querySelectorAll('.view-surah').forEach(button => {
+                button.addEventListener('click', function() {
+                    const surahNumber = this.getAttribute('data-surah');
+                    viewSurah(surahNumber);
+                });
+            });
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Setup Audio Players
+        function setupAudioPlayers() {
+            document.querySelectorAll('.play-audio').forEach(button => {
+                button.addEventListener('click', function() {
+                    const audioUrl = this.getAttribute('data-audio');
+                    const audio = new Audio(audioUrl);
+                    
+                    // Stop any playing audio
+                    document.querySelectorAll('.play-audio').forEach(btn => {
+                        btn.innerHTML = '<i class="fas fa-play"></i>';
+                        if (btn.innerText.includes('Dengarkan')) {
+                            btn.innerHTML = '<i class="fas fa-play mr-2"></i>Dengarkan Surah';
+                        }
+                    });
+                    
+                    // Check if audio is already playing
+                    if (window.currentAudio && !window.currentAudio.paused) {
+                        window.currentAudio.pause();
+                        if (window.currentAudio.src === audio.src) {
+                            window.currentAudio = null;
+                            return;
+                        }
+                    }
+                    
+                    // Play the new audio
+                    audio.play();
+                    if (this.innerText.includes('Dengarkan')) {
+                        this.innerHTML = '<i class="fas fa-pause mr-2"></i>Jeda';
+                    } else {
+                        this.innerHTML = '<i class="fas fa-pause"></i>';
+                    }
+                    
+                    audio.onended = () => {
+                        if (this.innerText.includes('Jeda')) {
+                            this.innerHTML = '<i class="fas fa-play mr-2"></i>Dengarkan Surah';
+                        } else {
+                            this.innerHTML = '<i class="fas fa-play"></i>';
+                        }
+                    };
+                    
+                    window.currentAudio = audio;
+                });
+            });
+        }
+        
+        // Show Loading Indicator
+        function showLoading() {
+            loadingIndicator.classList.remove('hidden');
+        }
+        
+        // Hide Loading Indicator
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+        }
+        
+        // Show No Results
+        function showNoResults() {
+            noResults.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+        }
+        
+        // Recent Searches
+        function saveRecentSearch(keyword) {
+            let recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            
+            // Avoid duplicates
+            if (!recentSearches.includes(keyword)) {
+                recentSearches.unshift(keyword);
+                recentSearches = recentSearches.slice(0, 5); // Keep only last 5 searches
+                localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+            }
+            
+            displayRecentSearches();
+        }
+        
+        function displayRecentSearches() {
+            const searches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            
+            if (searches.length > 0) {
+                recentSearchTags.innerHTML = '';
+                searches.forEach(keyword => {
+                    const tag = document.createElement('button');
+                    tag.className = 'px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm hover:bg-primary-200 transition-colors';
+                    tag.textContent = keyword;
+                    tag.addEventListener('click', () => {
+                        searchInput.value = keyword;
+                        searchQuran(keyword);
+                    });
+                    recentSearchTags.appendChild(tag);
+                });
+                recentSearches.classList.remove('hidden');
+            } else {
+                recentSearches.classList.add('hidden');
+            }
+        }
+        
+        // Event Listeners
+        searchButton.addEventListener('click', () => {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                searchQuran(keyword);
+            } else {
+                alert('Silakan masukkan kata kunci pencarian.');
+            }
+        });
+        
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const keyword = searchInput.value.trim();
+                if (keyword) {
+                    searchQuran(keyword);
+                } else {
+                    alert('Silakan masukkan kata kunci pencarian.');
+                }
+            }
+        });
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            displayRecentSearches();
+            
+            // Preload some surah info for better UX
+            fetch(`${API_BASE_URL}?action=getAllSurah`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.data) {
+                        data.data.forEach(surah => {
+                            surahCache[surah.number] = surah;
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error preloading surah data:', error);
+                });
+        });
+    </script>
+</body>
+</html>
