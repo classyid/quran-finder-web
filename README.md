@@ -1,6 +1,6 @@
 # Quran-Finder-Web
 
-![Quran Finder](https://example.com/banner-image.png)
+![Quran Finder](https://blog.classy.id/upload/gambar_berita/c69ebfc5f1abb21b87bb576c22ef590d_20250323225057.png)
 
 Aplikasi web pencarian Al-Quran dengan antarmuka modern dan responsif. Aplikasi ini memungkinkan pengguna untuk mencari ayat-ayat Al-Quran berdasarkan kata kunci, menjelajahi surah, juz, dan halaman mushaf, serta mendengarkan bacaan ayat.
 
